@@ -179,7 +179,7 @@ contract GaugeV2 is ReentrancyGuard, Ownable {
             require(_VE.ownerOf(tokenId) == account);
             if (tokenIds[account] == 0) {
                 tokenIds[account] = tokenId;
-                IVoter(_VE.voter()).attachTokenToGauge(tokenId, account);
+                IVoter(DISTRIBUTION).attachTokenToGauge(tokenId, account);
             }
             require(tokenIds[account] == tokenId, "Token already attached");
         } else {
@@ -235,7 +235,7 @@ contract GaugeV2 is ReentrancyGuard, Ownable {
         if (tokenId > 0) {
             require(tokenId == tokenIds[msg.sender]);
             tokenIds[msg.sender] = 0;
-            IVoter(_VE.voter()).detachTokenFromGauge(tokenId, msg.sender);
+            IVoter(DISTRIBUTION).detachTokenFromGauge(tokenId, msg.sender);
         } else {
             tokenId = tokenIds[msg.sender];
         }

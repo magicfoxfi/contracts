@@ -35,7 +35,6 @@ contract VoterV2_1 is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     address public lz_receiver;
 
     address[] public gaugeList; // all gauges viable for incentives
-    mapping(address => address) public gauges; // pool => gauge
     mapping(address => address) public mainChainGauges; // mainGauge => sideGauge
     mapping(address => uint) public gaugesDistributionTimestmap;
     mapping(address => address) public poolForGauge; // gauge => pool

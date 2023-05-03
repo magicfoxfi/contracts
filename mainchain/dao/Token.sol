@@ -5,7 +5,7 @@ import "./interfaces/IToken.sol";
 
 contract Token is IToken {
 
-    string public constant name = "MagicFox";
+    string public constant name = "Magic Fox";
     string public constant symbol = "FOX";
     uint8 public constant decimals = 18;
     uint public totalSupply = 0;
@@ -33,11 +33,11 @@ contract Token is IToken {
     }
 
 
-    // Initial mint: total 50M    
+    // Initial mint: total 3_239_476    
     function initialMint(address _recipient) external {
         require(msg.sender == minter && !initialMinted);
         initialMinted = true;
-        _mint(_recipient, 50 * 1e6 * 1e18);
+        _mint(_recipient, 3_239_476 * 1e18);
     }
 
     function approve(address _spender, uint _value) external returns (bool) {

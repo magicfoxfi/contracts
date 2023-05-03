@@ -168,7 +168,13 @@ contract GaugeV2 is ReentrancyGuard, Ownable {
 
     ///@notice deposit internal
     function _deposit(uint256 amount, address account, uint256 tokenId) internal nonReentrant updateReward(account) {
-        require(amount > 0, "deposit(Gauge): cannot stake 0");
+        if (amount == 0) {
+            // Allow boost with veNFT without depositing extra amount
+            require(
+                balances[account] > 0 && tokenId > 0, 
+                "deposit(Gauge): deposit 0 allowed only if already balance > 0 and tokenId != 0."
+            );
+        }
 
         balances[account] = balances[account].add(amount);
         _totalSupply = _totalSupply.add(amount);
@@ -179,7 +185,7 @@ contract GaugeV2 is ReentrancyGuard, Ownable {
             require(_VE.ownerOf(tokenId) == account);
             if (tokenIds[account] == 0) {
                 tokenIds[account] = tokenId;
-                IVoter(_VE.voter()).attachTokenToGauge(tokenId, account);
+                IVoter(DISTRIBUTION).attachTokenToGauge(tokenId, account);
             }
             require(tokenIds[account] == tokenId);
         } else {
@@ -235,7 +241,7 @@ contract GaugeV2 is ReentrancyGuard, Ownable {
         if (tokenId > 0) {
             require(tokenId == tokenIds[msg.sender]);
             tokenIds[msg.sender] = 0;
-            IVoter(_VE.voter()).detachTokenFromGauge(tokenId, msg.sender);
+            IVoter(DISTRIBUTION).detachTokenFromGauge(tokenId, msg.sender);
         } else {
             tokenId = tokenIds[msg.sender];
         }

@@ -26,10 +26,19 @@ interface IRouter {
 }
 
 contract FairlaunchZap is Ownable {
+  using SafeMath for uint256;
+  using SafeERC20 for IERC20;
+  address public immutable SALE_TOKEN; // token used to participate
 
   mapping(address => bool) public whitelistedTokens;
   IRouter public constant router = IRouter(0x10ED43C718714eb63d5aA57B78B54704E256024E);
   address public fairlaunch;
+  address public wnative;
+
+  constructor (address _wnative, address saleToken) {
+    wnative = _wnative; // Should be 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c for BNB
+    SALE_TOKEN = saleToken;
+  }
 
   function whitelistTokens(address[] calldata _tokens, bool whitelist) external onlyOwner {
     for (uint i = 0; i < _tokens.length; i++) {
@@ -38,6 +47,7 @@ contract FairlaunchZap is Ownable {
   }
 
   function convert(
+    address buyer,
     address inputToken, 
     uint256 inputAmount, 
     address[] calldata path
@@ -47,8 +57,21 @@ contract FairlaunchZap is Ownable {
         whitelistedTokens[inputToken],
         "inputToken is not whitelisted"
     );
+    require(
+        path[path.length - 1] == SALE_TOKEN,
+        "wrong path path[-1]"
+    );
 
     if (inputToken != address(0)) {
+      require(path[0] == inputToken, "wrong path path[0]");
+      require(msg.value == 0, "Value sent for non native token");
+      IERC20(inputToken).safeTransferFrom(
+        buyer, 
+        address(this), 
+        inputAmount
+      );
+
+      IERC20(inputToken).approve(address(router), inputAmount);
       router.swapExactTokensForTokens(
           inputAmount,
           0,
@@ -57,6 +80,8 @@ contract FairlaunchZap is Ownable {
           block.timestamp
       );
     } else {
+      require(path[0] == wnative, "wrong path path[0]");
+      require(msg.value > 0, "No value sent");
       router.swapExactETHForTokens{value: msg.value}(
           0,
           path,

@@ -14,10 +14,11 @@ interface IVotingEscrow {
 
 interface IZap {
   function convert(
-      address inputToken, 
-      uint256 inputAmount, 
-      address[] calldata path
-    ) external payable returns (uint256);
+    address buyer,
+    address inputToken, 
+    uint256 inputAmount, 
+    address[] calldata path
+  ) external payable returns (uint256);
 }
 
 contract Fairlaunch is Ownable, ReentrancyGuard {
@@ -209,16 +210,9 @@ contract Fairlaunch is Ownable, ReentrancyGuard {
     address[] calldata path,
     address referralAddress
   ) external payable isSaleActive nonReentrant {
-    require(
-        path[0] == address(inputToken),
-        "wrong path path[0]"
-    );
-    require(
-        path[path.length - 1] == address(SALE_TOKEN),
-        "wrong path path[-1]"
-    );
-
+    // All check are done in ZAP. Zap is used to never mix usdc tokens of ref earnings and converts.
     uint256 amount = zap.convert{value: msg.value}(
+      msg.sender,
       inputToken,
       inputAmount,
       path
